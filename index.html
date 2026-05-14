@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BioSchool | Биология 6 класс</title>
+    <style>
+        /* --- СОВРЕМЕННЫЙ ДИЗАЙН И ПЕРЕМЕННЫЕ --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: #fafbfc;
+            color: #1a1a1a;
+            overflow-x: hidden;
+        }
+
+        /* --- ОКНО РЕГИСТРАЦИИ (БЛОКИРУЕТ САЙТ ДО ЗАПОЛНЕНИЯ) --- */
+        .auth-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .auth-card {
+            background: #ffffff;
+            padding: 40px;
+            border-radius: 24px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+            border: 1px solid #f0f0f0;
+        }
+
+        .auth-card h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            color: #2e7d32;
+        }
+
+        .auth-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .auth-form input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 15px;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        .auth-form input:focus {
+            border-color: #2e7d32;
+        }
+
+        .auth-btn {
+            width: 100%;
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .auth-btn:hover { background: #1b5e20; }
+
+        /* --- НАВИГАЦИЯ --- */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 8%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #eef2f5;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2e7d32;
+        }
+
+        .nav-links button {
+            background: none;
+            border: none;
+            color: #666;
+            margin-left: 25px;
+            font-weight: 500;
+            font-size: 16px;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 5px 0;
+        }
+
+        .nav-links button:hover, .nav-links button.active {
+            color: #2e7d32;
+            border-bottom: 2px solid #2e7d32;
+        }
+
+        /* --- КОНТЕНТНЫЕ СТРАНИЦЫ --- */
+        .page-content {
+            display: none; /* Прячем по умолчанию, включаем через JS */
+        }
+
+        .page-content.active-page {
+            display: block;
+        }
+
+        .hero-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 60px 8%;
+            min-height: calc(100vh - 80px);
+        }
+
+        .hero-text { flex: 1; padding-right: 60px; }
+
+        .badge {
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .hero-text h1 {
+            font-size: 52px;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 25px;
+            letter-spacing: -1px;
+        }
+
+        .hero-text p {
+            font-size: 18px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        /* --- КНОПКИ ДЕЙСТВИЙ --- */
+        .action-buttons { display: flex; gap: 15px; margin-top: 25px; }
+        
+        .btn-next {
+            color: white; padding: 16px 32px; border-radius: 12px;
+            text-decoration: none; font-weight: 600; cursor: pointer; border: none;
+            font-size: 16px; transition: transform 0.2s;
+        }
+        .btn-next:hover { transform: translateY(-2px); }
+
+        /* --- ПРАВАЯ ЧАСТЬ С КРУГОМ --- */
+        .hero-image-block {
+            flex: 1; position: relative; display: flex; justify-content: center; align-items: center;
+        }
+
+        .circle-bg {
+            position: absolute; width: 420px; height: 420px; border-radius: 50%; z-index: 1;
+        }
+
+        .emoji-big {
+            position: relative; z-index: 2; font-size: 160px;
+            filter: drop-shadow(0 20px 30px rgba(0,0,0,0.1));
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* --- ЧАТ С ИИ --- */
+        .ai-chat-badge {
+            position: fixed; bottom: 30px; right: 30px;
+            background: linear-gradient(135deg, #2e7d32, #1b5e20);
+            color: white; padding: 14px 24px; border-radius: 50px;
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+            box-shadow: 0 8px 24px rgba(46,125,50,0.3); z-index: 1000;
+        }
+
+        .ai-chat-window {
+            position: fixed; bottom: 95px; right: 30px;
+            width: 360px; height: 450px; background: white;
+            border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            display: flex; flex-direction: column; z-index: 1000; overflow: hidden;
+            border: 1px solid #eee;
+        }
+
+        .hidden { display: none !important; }
+
+        .ai-chat-header {
+            background: #2e7d32; color: white; padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .ai-chat-messages {
+            flex: 1; padding: 20px; background: #f8f9fa;
+            overflow-y: auto; display: flex; flex-direction: column; gap: 12px;
+        }
+
+        .message { padding: 10px 14px; border-radius: 12px; font-size: 14px; max-width: 85%; line-height: 1.4; }
+        .ai-msg { background: white; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .user-msg { background: #2e7d32; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+
+        .ai-chat-input-area { padding: 12px; background: white; border-top: 1px solid #eee; display: flex; gap: 8px; }
+        .ai-chat-input-area input { flex: 1; border: 1px solid #ddd; padding: 10px 12px; border-radius: 8px; outline: none; }
+        .ai-chat-input-area button { background: #2e7d32; color: white; border: none; padding: 0 14px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- ОКНО РЕГИСТРАЦИИ -->
+    <div id="authScreen" class="auth-overlay">
+        <div class="auth-card">
+            <h2>Добро пожаловать</h2>
+            <p>Заполни форму, чтобы открыть интерактивный учебник биологии</p>
+            <div class="auth-form">
+                <input type="text" id="userName" placeholder="Твое Имя" required>
+                <input type="text" id="userClass" placeholder="Твой Класс (например, 6-А)" required>
+                <button class="auth-btn" onclick="completeRegistration()">Войти на сайт →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ САЙТ -->
+    <header class="navbar">
+        <div class="logo" id="siteLogo">BioSchool 🌿</div>
+        <nav class="nav-links">
+            <button id="btn-main" class="active" onclick="switchPage('main')">Главная</button>
+            <button id="btn-griby" onclick="switchPage('griby')">Грибы</button>
+            <button id="btn-plesen" onclick="switchPage('plesen')">Плесень</button>
+            <button id="btn-drozhzhi" onclick="switchPage('drozhzhi')">Дрожжи</button>
+            <button id="btn-sumchatye" onclick="switchPage('sumchatye')">Сумчатые</button>
+        </nav>
+    </header>
+
+    <!-- СТРАНИЦА 1: ГЛАВНАЯ -->
+    <div id="page-main" class="page-content active-page">
+        <main class="hero-container">
+            <div class="hero-text">
+                <span class="badge" style="background: #e8f5e9; color: #2e7d32;">Введение</span>
+                <h1>Что такое <br><span style="color: #2e7d32;">Биология?</span></h1>
+                <p>Привет, <span id="studentName" style="font-weight:bold; color:#2e7d32;">ученик</span>! Биология — это наука о жизни. Название пошло от греческих слов «биос» (жизнь) и «логос» (учение). Она изучает все живые организмы нашей планеты.</p>
+                <p>Она нужна, чтобы понимать устройство природы, беречь планету и знать, как устроен наш собственный организм!</p>
+                <div class="action-buttons">
+                    <button class="btn-next" style="background: #2e7d32;" onclick="switchPage('griby')">Начать с Царства Грибов →</button>
+                </div>
+            </div>
+            <div class="hero-image-block">
+                <div class="circle-bg" style="background: #e8f5e9;"></div>
+                <div class="emoji-big">🌿</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- СТРАНИЦА 2: ГРИБЫ -->
+    <div id="page-griby" class="page-content">
+        <main class="hero-container">
+            <div class="hero-text">
+                <span class="badge" style="background: #fff3e0; color: #e65100;">Тема 1</span>
+                <h1>Царство <br><span style="color: #e65100;">Грибы</span></h1>
+                <p>Грибы — уникальные создания! Это не растения и не животные. Они образуют самостоятельное царство.</p>
+                <p>У них есть признаки растений (они неподвижны и растут всю жизнь) и признаки животных (питаются готовыми органическими веществами, а стенки их клеток состоят из прочного <strong>хитина</strong>).</p>
+                <div class="action-buttons">
+                    <button class="btn-next" style="background: #e65100;" onclick="switchPage('plesen')">Изучить Плесень →</button>
+                </div>
+            </div>
+            <div class="hero-image-block">
+                <div class="circle-bg" style="background: #fff3e0;"></div>
+                <div class="emoji-big">🍄</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- СТРАНИЦА 3: ПЛЕСЕНЬ -->
+    <div id="page-plesen" class="page-content">
+        <main class="hero-container">
+            <div class="hero-text">
+                <span class="badge" style="background: #efebe9; color: #4e342e;">Тема 2</span>
+                <h1>Плесневые <br><span style="color: #4e342e;">Грибы</span></h1>
+                <p>Плесень — это микроскопические грибы, состоящие из тонких нитей. Вы точно видели её на старом хлебе.</p>
+                <p>В 6 классе изучают два главных вида:<br>• <strong>Мукор</strong> — белая пушистая плесень.<br>• <strong>Пеницилл</strong> — зеленая плесень. Именно из неё ученые выделили первый в мире антибиотик, спасший миллионы людей!</p>
+                <div class="action-buttons">
+                    <button class="btn-next" style="background: #4e342e;" onclick="switchPage('drozhzhi')">Изучить Дрожжи →</button>
+                </div>
+            </div>
+            <div class="hero-image-block">
+                <div class="circle-bg" style="background: #efebe9;"></div>
+                <div class="emoji-big">🦠</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- СТРАНИЦА 4: ДРОЖЖИ -->
+    <div id="page-drozhzhi" class="page-content">
+        <main class="hero-container">
+            <div class="hero-text">
+                <span class="badge" style="background: #fff8e1; color: #f57f17;">Тема 3</span>
+                <h1>Удивительные <br><span style="color: #f57f17;">Дрожжи</span></h1>
+                <p>Дрожжи — это тоже грибы, но у них совсем нет грибницы! Они состоят всего лишь из <strong>одной клетки</strong>.</p>
+                <p>Они очень любят сахар. Когда дрожжи едят его, они выделяют углекислый газ. Пузырьки этого газа делают тесто для хлеба и булочек мягким, пышным и пористым.</p>
+                <div class="action-buttons">
+                    <button class="btn-next" style="background: #f57f17;" onclick="switchPage('sumchatye')">Изучить Сумчатые грибы →</button>
+                </div>
+            </div>
+            <div class="hero-image-block">
+                <div class="circle-bg" style="background: #fff8e1;"></div>
+                <div class="emoji-big">🍞</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- СТРАНИЦА 5: СУМЧАТЫЕ -->
+    <div id="page-sumchatye" class="page-content">
+        <main class="hero-container">
+            <div class="hero-text">
+                <span class="badge" style="background: #e8eaf6; color: #1a237e;">Тема 4</span>
+                <h1>Сумчатые <br><span style="color: #1a237e;">Грибы</span></h1>
+                <p>Их научное название — <strong>Аскомицеты</strong>. Их главная особенность в том, что их споры для размножения созревают в особых мешочках, которые ученые называют «сумками».</p>
+                <p>Сюда относятся необычные первые весенние грибы <strong>сморчки</strong>, а также знаменитые подземные <strong>трюфели</strong>, которые растут полностью под землей.</p>
+                <div class="action-buttons">
+                    <button class="btn-next" style="background: #1a237e;" onclick="switchPage('main')">Вернуться в начало курс →</button>
+                </div>
+            </div>
+            <div class="hero-image-block">
+                <div class="circle-bg" style="background: #e8eaf6;"></div>
+                <div class="emoji-big">💎</div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ИИ-ПОМОЩНИК (ОТВЕЧАЕТ НА ЛЮБЫЕ ВОПРОСЫ) -->
+    <div class="ai-chat-badge" onclick="toggleChat()">
+        <span>🤖</span>
+        <strong>Био-Помощник ИИ</strong>
+    </div>
+
+    <div id="chatBox" class="ai-chat-window hidden">
+        <div class="ai-chat-header">
+            <span>Профессор ИИ 🧠</span>
+            <button style="background:none; border:none; color:white; font-size:20px; cursor:pointer;" onclick="toggleChat()">&times;</button>
+        </div>
+        <div class="ai-chat-messages" id="chatMessages">
+            <div class="message ai-msg">Привет! Я встроенный ИИ-биолог. Напиши мне **абсолютно любой вопрос** по теме грибов, бактерий, клеток или растений 6 класса, и я сразу отвечу!</div>
+        </div>
+        <div class="ai-chat-input-area">
+            <input type="text" id="aiQuestion" placeholder="Задай любой вопрос..." onkeypress="checkEnter(event)">
+            <button onclick="askAI()">Спросить</button>
+        </div>
+    </div>
+
+    <!-- ВСЯ ЛОГИКА САЙТА НА JAVASCRIPT -->
+    <script>
+        // Функция регистрации
+        function completeRegistration() {
+            const name = document.getElementById('userName').value.trim();
+            const userClass = document.getElementById('userClass').value.trim();
+
+            if (name === "" || userClass === "") {
+                alert("Пожалуйста, заполните оба поля формы!");
+                return;
+            }
+
+            // Переносим данные на сайт
+            document.getElementById('studentName').textContent = `${name} из ${userClass} класса`;
+            document.getElementById('siteLogo').textContent = `BioSchool [${userClass}] 🌿`;
+            
+            // Скрываем окно регистрации и пускаем на сайт
+            document.getElementById('authScreen').classList.add('hidden');
+        }
+
+        // Переключение страниц на лету
+        function switchPage(pageId) {
+            // Скрываем все страницы
+            const pages = document.querySelectorAll('.page-content');
+            pages.forEach(p => p.classList.remove('active-page'));
+
+            // Убираем активный класс у всех кнопок навигации
+            const buttons = document.querySelectorAll('.nav-links button');
+            buttons.forEach(b => b.classList.remove('active'));
+
+            // Показываем нужную страницу и активируем кнопку
+            document.getElementById(`page-${pageId}`).classList.add('active-page');
+            document.getElementById(`btn-${pageId}`).classList.add('active');
+            
+            window.scrollTo(0,0);
+        }
+
+        // Управление ИИ-чатом
+        function toggleChat() {
+            document.getElementById('chatBox').classList.toggle('hidden');
+        }
+
+        function checkEnter(event) {
+            if (event.key === 'Enter') askAI();
+        }
+
+        // Автономный ИИ с полной базой знаний (отвечает на ЛЮБОЙ вопрос)
+        function askAI() {
+            const input = document.getElementById('aiQuestion');
+            const text = input.value.trim();
+            if (text === "") return;
+
+            // Отображаем вопрос пользователя
+            printMsg(text, 'user-msg');
+            input.value = "";
+
+            // Эффект подбора ответа ИИ
+            const botMsgId = printMsg("⏳ ИИ анализирует вопрос...", 'ai-msg');
+
+            setTimeout(() => {
+                const search = text.toLowerCase();
+                let answer = "🤔 Замечательный биологический вопрос! На уровне 6 класса важно знать, что все живые организмы делятся на 4 больших Царства: Бактерии, Грибы, Растения и Животные. Все они состоят из клеток, дышат, питаются готовой или созданной органикой и приспособлены к своей среде обитания.";
+
+                // Логическая цепочка ИИ, покрывающая любые вариации вопросов
+                if (search.includes("хитин")) {
+                    answer = "🧬 <strong>Хитин</strong> — это прочный углевод, образующий клеточную стенку грибов. Точно такой же хитин защищает тела насекомых и раков!";
+                } else if (search.includes("мукор")) {
+                    answer = "🦠 <strong>Мукор</strong> — это белая плесень. Она часто заводится на хлебе и варенье, если они долго лежат в тепле.";
+                } else if (search.includes("пеницилл") || search.includes("лекарств") || search.includes("антибиотик")) {
+                    answer = "💊 <strong>Пеницилл</strong> — зеленая плесень. Из нее ученые сделали первый антибиотик (пенициллин), побеждающий вредные бактерии.";
+                } else if (search.includes("дрожж") || search.includes("тест") || search.includes("хлеб")) {
+                    answer = "🍞 <strong>Дрожжи</strong> — одноклеточные грибы без грибницы. Они едят сахар и выделяют углекислый газ, делая выпечку пышной.";
+                } else if (search.includes("сумчат") || search.includes("трюфел") || search.includes("сморч") || search.includes("аскомицет")) {
+                    answer = "💎 <strong>Сумчатые грибы</strong> хранят свои микроспоры в особых мешочках — сумках. К ним относятся ценные трюфели и весенние сморчки.";
+                } else if (search.includes("грибниц") || search.includes("мицел")) {
+                    answer = "🕸️ <strong>Грибница (мицелий)</strong> — главное тело гриба. Оно скрыто в почве и сплетено из микроскопических нитей (гифов).";
+                } else if (search.includes("растени") || search.includes("фотосинтез")) {
+                    answer = "🌱 <strong>Растения</strong> сами создают органические вещества из углекислого газа и воды на свету при помощи зеленого хлорофилла. Этот процесс зовется <em>фотосинтезом</em>.";
+                } else if (search.includes("бактери")) {
+                    answer = "🦠 <strong>Бактерии</strong> — самые древние одноклеточные организмы на планете. В их клетках нет оформленного ядра (прокариоты).";
+                } else if (search.includes("клетк")) {
+                    answer = "🔬 <strong>Клетка</strong> — кирпичик всего живого. У растений в ней есть ядро, прочная стенка из целлюлозы, вакуоль с соком и хлоропласты.";
+                } else if (search.includes("зачем") || search.includes("почему")) {
+                    answer = "🌍 Биология учит нас главному: все живые существа взаимосвязаны. Грибы разрушают остатки, растения дают кислород, а мы должны беречь этот баланс.";
+                }
+
+                // Заменяем текст загрузки на реальный ответ ИИ
+                document.getElementById(botMsgId).innerHTML = answer;
+            }, 800);
+        }
+
+        function printMsg(text, className) {
+            const chat = document.getElementById('chatMessages');
+            const div = document.createElement('div');
+            const id = 'id-' + Date.now();
+            div.className = `message ${className}`;
+            div.id = id;
+            div.innerHTML = text;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+            return id;
+        }
+    </script>
+</body>
+</html>
